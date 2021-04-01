@@ -1,32 +1,22 @@
+import 'dart:core';
+
 import 'package:dio/dio.dart';
-import 'package:flutter_starter/consumer/model/movie_entity.dart';
-import 'package:flutter_starter/data/model/payload.dart';
+import 'package:flutter_starter/consumer/model/comment_entity.dart';
+import 'package:flutter_starter/consumer/model/post_entity.dart';
 import 'package:flutter_starter/data/util/api_service.dart';
 
-abstract class HomeService extends ApiService {
-  Future<Payload<List<MovieEntity>>> getMovies();
-}
+class HomeService {
+  var _api = ApiService();
 
-class HomeServiceImpl extends HomeService {
-  @override
-  Future<Payload<List<MovieEntity>>> getMovies() async {
-    try {
-      Response response = await service.get("movies.json");
-      print(response.data);
-      List<MovieEntity> movies = (response.data as List)
-          .map((it) => MovieEntity().fromJson(it))
-          .toList();
-      return success(movies, message: "OK");
-    } on Exception catch (e) {
-      return failure(e.toString());
-    }
+  Future<Response<List<PostEntity>>> getPosts() {
+    return _api.service.get<List<PostEntity>>("posts");
   }
 
-  static final HomeServiceImpl _singleton = HomeServiceImpl._internal();
-
-  factory HomeServiceImpl() {
-    return _singleton;
+  Future<Response<PostEntity>> getPost(String id) {
+    return _api.service.get<PostEntity>("posts/$id");
   }
 
-  HomeServiceImpl._internal();
+  Future<Response<List<CommentEntity>>> getComments(String id) {
+    return _api.service.get<List<CommentEntity>>("/posts/$id/comments");
+  }
 }

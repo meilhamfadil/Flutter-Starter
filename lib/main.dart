@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_starter/consumer/model/movie_entity.dart';
-import 'package:flutter_starter/main_state.dart';
+import 'package:flutter_starter/consumer/model/post_entity.dart';
+import 'package:flutter_starter/main_cubit.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
 
-void main() {
+import 'main_state.dart';
+
+void main() async {
+  await DotEnv.load(fileName: ".env");
   runApp(MyApp());
 }
 
@@ -26,7 +30,7 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => MainCubit()..getMovies(),
+      create: (context) => MainCubit()..getPosts(),
       child: Scaffold(
           appBar: AppBar(
             title: Text("Movie List"),
@@ -40,8 +44,10 @@ class MyHomePage extends StatelessWidget {
                   return mainLoadingView();
                 } else if (state is MainLoaded) {
                   return mainLoadedView(state.movies);
+                } else if (state is MainError) {
+                  return mainErrorView(state.message);
                 } else {
-                  return mainErrorView();
+                  return mainView();
                 }
               },
             ),
@@ -61,7 +67,7 @@ class MyHomePage extends StatelessWidget {
     );
   }
 
-  Widget mainLoadedView(List<MovieEntity> list) {
+  Widget mainLoadedView(List<PostEntity> list) {
     return ListView.separated(
       itemCount: list.length,
       itemBuilder: (context, index) {
@@ -69,7 +75,7 @@ class MyHomePage extends StatelessWidget {
         return ListTile(
           dense: true,
           title: Text(movie.title),
-          subtitle: Text(movie.year.toString()),
+          subtitle: Text(movie.body.toString()),
         );
       },
       separatorBuilder: (BuildContext context, int index) {
@@ -81,9 +87,15 @@ class MyHomePage extends StatelessWidget {
     );
   }
 
-  Widget mainErrorView() {
+  Widget mainErrorView(String message) {
     return Center(
-      child: Text("Error Detected"),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text("Error Detected : "),
+          Text(message),
+        ],
+      ),
     );
   }
 }
